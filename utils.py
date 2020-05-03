@@ -24,7 +24,7 @@ def dataloaders(batch_size, use_cuda):
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
-        batch_size=test_batch_size, shuffle=True, **kwargs)
+        batch_size=batch_size, shuffle=True, **kwargs)
     
     return train_loader, test_loader
 
@@ -56,11 +56,14 @@ def load_ckp(checkpoint_path, model, optimizer):
     return model, optimizer
 
 
-def train(model, device, train_loader, optimizer, epoch):
+def train(model, device, train_loader, optimizer, epoch, batch_size):
     model.train()
     running_loss = 0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
+        # print (data.size())
+        data = data.view(-1, 784)
+        # print (data.size())
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
@@ -76,13 +79,14 @@ def train(model, device, train_loader, optimizer, epoch):
 #                 100. * batch_idx / len(train_loader), loss.item()))
 
     
-def test(model, device, test_loader):
+def test(model, device, test_loader, batch_size):
     model.eval()
     test_loss = 0
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
+            data = data.view(-1, 28*28)
             output = model(data)
             test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
@@ -103,4 +107,20 @@ def show_losses(train_losses, test_losses):
     plt.xlabel('number of training examples seen')
     plt.ylabel('Loss')
     fig.show()
-       
+    
+
+def show_sharpness_norm(l_sharpness, l_weight_norms, sigmas):
+    # for i in range(len(sigmas)):
+    #     sigmas[i] = str(sigmas[i])
+    fig = plt.figure()
+    plt.plot(sigmas, l_sharpness, label = "sharpness",  marker='o')
+    plt.plot(sigmas, l_weight_norms, label = "norms",  marker='o')
+    # plt.plot(l_weight_norms, l_sharpness, label = "S", marker='o', color='b')
+    plt.grid(True, linestyle='-.')
+    plt.legend() #loc='lower left'
+    plt.title("Norm and Sharpness")
+    plt.xlabel("Sigma")
+    plt.ylabel("Measure")
+    plt.show()      
+###############################
+
