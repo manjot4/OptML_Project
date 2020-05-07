@@ -40,7 +40,7 @@ def compute_grad_variance(grads):  #list of lists consisting of gradient values.
     # grads = torch.tensor(grads)
     all_grads = torch.zeros(len(grads[0]))
     for i in grads:
-        all_grads += i 
+      all_grads += i 
     
     avg_grads = all_grads / len(grads)
     # print (grads.size())
@@ -76,10 +76,9 @@ def cal_l2_norm(model):
     return (l2_norm * l2_norm)
     
     
-def compute_sharpness(model, p_test_error, train_loss, weight_l2_norm, size, sigma, delta):
-    ln_term = torch.tensor((2*size) / (delta))
-    val = (1/size) * ( (weight_l2_norm / (2*sigma*sigma)) + (torch.log(ln_term)) )
-    last_term = 4 * ((val)**(0.5))
-    sharpness = p_test_error - train_loss - last_term
-    return sharpness
+def compute_bound(model, train_size, sigma, weight_l2_norm, delta):
+    ln_term = torch.tensor((2*train_size) / (delta))
+    val = (1/train_size) * ( (weight_l2_norm / (2*sigma*sigma)) + (torch.log(ln_term)) )
+    last_term = 4 * ((val)**(0.5))  # it is a tensor value
+    return last_term.item()  
 

@@ -78,7 +78,12 @@ def train(model, device, train_loader, optimizer, epoch, batch_size):
 #                 epoch, batch_idx * len(data), len(train_loader.dataset),
 #                 100. * batch_idx / len(train_loader), loss.item()))
 
-    
+
+
+# we are getting the loss for one batch....
+
+
+
 def test(model, device, test_loader, batch_size):
     model.eval()
     test_loss = 0
@@ -88,7 +93,7 @@ def test(model, device, test_loader, batch_size):
             data, target = data.to(device), target.to(device)
             data = data.view(-1, 28*28)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='mean').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
@@ -121,6 +126,29 @@ def show_sharpness_norm(l_sharpness, l_weight_norms, sigmas):
     plt.title("Norm and Sharpness")
     plt.xlabel("Sigma")
     plt.ylabel("Measure")
-    plt.show()      
+    plt.show()	        
 ###############################
+    
+# Rough Work    
+    
+# #pruning 
+#     total = 0
+#     for m in model.modules():
+#         if isinstance(m, nn.Conv2d):
+#             total += m.weight.data.numel()
+#     conv_weights = torch.zeros(total)
+#     index = 0
+#     for m in model.modules():
+#         if isinstance(m, nn.Conv2d):
+#             size = m.weight.data.numel()
+#             conv_weights[index:(index+size)] = m.weight.data.view(-1).abs().clone()
+#             index += size 
 
+# d = (torch.distributions.normal.Normal(torch.tensor([0.0]), torch.tensor([1.0])))
+# # print (d.sample((5,)).squeeze())
+
+# a = torch.zeros([2,2])
+# b = d.sample((2,2))
+# print (b)
+# a = b.squeeze()
+# print (a)
