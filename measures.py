@@ -26,25 +26,13 @@ def get_gradients(model):
 
 
 
-def compute_grad_variance(grads):  #list of lists consisting of gradient values....
-    print (grads)
-    """E[|| g ||^2 ]"""
-    total_ = 0
-    for i in range(len(grads)):
-        # grads[i] = torch.tensor(grads[i])
-        val = torch.norm(grads[i])
-        total_ += val
-    ft = total_ / len(grads)
+def compute_grad_variance(grad_norms, grad_avg):  #list of lists consisting of gradient values....
+    """E[|| g ||^2 ]""" 
+    ft = sum(grad_norms) / len(grad_norms)
     
     """|| E[g] ||^2"""
-    # grads = torch.tensor(grads)
-    all_grads = torch.zeros(len(grads[0]))
-    for i in grads:
-      all_grads += i 
-    
-    avg_grads = all_grads / len(grads)
-    # print (grads.size())
-    st = torch.norm(avg_grads)
+    avg_grads = sum(grad_avg)/len(grad_avg)
+    st = torch.norm(torch.tensor(avg_grads))
     
     variance_score = ft - st
     return variance_score
@@ -82,3 +70,29 @@ def compute_bound(model, train_size, sigma, weight_l2_norm, delta):
     last_term = 4 * ((val)**(0.5))  # it is a tensor value
     return last_term.item()  
 
+################################################################################################
+
+# def compute_grad_variance(grads):  #list of lists consisting of gradient values....
+#     # print (grads)
+#     """E[|| g ||^2 ]"""
+#     # total_ = 0
+#     # for i in range(len(grads)):
+#     #     # grads[i] = torch.tensor(grads[i])
+#     #     val = torch.norm(grads[i])
+#     #     total_ += val
+#     grads = 
+#     ft = total_ / len(grads)
+    
+#     """|| E[g] ||^2"""
+#     # grads = torch.tensor(grads)
+#     # all_grads = torch.zeros(len(grads[0]))
+#     # for i in grads:
+#       # all_grads += i 
+    
+#     # avg_grads = all_grads / len(grads)
+#     # print (grads.size())
+#     avg_grads = torch.mean(grads, 0)
+#     st = torch.norm(avg_grads)
+    
+#     variance_score = ft - st
+#     return variance_score
