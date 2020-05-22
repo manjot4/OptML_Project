@@ -27,7 +27,7 @@ def dataloaders(batch_size, use_cuda, seed):
 
     val_dataset = datasets.MNIST('../data', train=True, download=True,
                           transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))]))
-    valid_size = 0.2  
+    valid_size = 0.1  
     num_train = len(train_dataset)
     indices = list(range(num_train))
     split = int(np.floor(valid_size * num_train))
@@ -55,7 +55,7 @@ def dataloaders(batch_size, use_cuda, seed):
                        ])),
         batch_size=batch_size, shuffle=True, **kwargs)
     
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, len(train_sampler), len(valid_sampler)
 
 
 #### path:= "./your_directory/checkpoint_name.tar",
@@ -84,7 +84,7 @@ def load_ckp(checkpoint_path, model, optimizer):
     optimizer.load_state_dict(checkpoint['optimizer'])
     return model, optimizer
 
-def train_sel_lr(model, device, train_loader, optimizer, epoch, batch_size):
+def train(model, device, train_loader, optimizer, epoch, batch_size):
     model.train()
     running_loss = 0
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -100,7 +100,7 @@ def train_sel_lr(model, device, train_loader, optimizer, epoch, batch_size):
     return train_loss
 
 
-def train(model, device, train_loader, optimizer, epoch, batch_size):
+def train_get_grad(model, device, train_loader, optimizer, epoch, batch_size):
     model.train()
     grad_norms = []
     grad_avg = []
@@ -188,6 +188,26 @@ def test(model, device, test_loader, batch_size):
         100. * correct / len(test_loader.dataset)))
     return test_loss
 
+
+def test_2(model, device, test_loader, batch_size, num_samples):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            data = data.view(-1, 28*28)
+            output = model(data)
+            test_loss += F.nll_loss(output, target).item()  
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    test_loss = test_loss / len(test_loader) 
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, num_samples,
+        100. * correct / num_samples))
+    return test_loss
+
  
     
 def show_losses(train_losses, test_losses):
@@ -200,17 +220,17 @@ def show_losses(train_losses, test_losses):
     fig.show()
     
 
-def show_sharpness_norm(l_sharpness, l_weight_norms, sigmas):
-    # for i in range(len(sigmas)):
-    #     sigmas[i] = str(sigmas[i])
-    fig = plt.figure()
-    plt.plot(sigmas, l_sharpness, label = "sharpness",  marker='o')
-    plt.plot(sigmas, l_weight_norms, label = "norms",  marker='o')
-    # plt.plot(l_weight_norms, l_sharpness, label = "S", marker='o', color='b')
-    plt.grid(True, linestyle='-.')
-    plt.legend() #loc='lower left'
-    plt.title("Norm and Sharpness")
-    plt.xlabel("Sigma")
-    plt.ylabel("Measure")
-    plt.show()          
-###############################
+# def show_sharpness_norm(l_sharpness, l_weight_norms, sigmas):
+#     # for i in range(len(sigmas)):
+#     #     sigmas[i] = str(sigmas[i])
+#     fig = plt.figure()
+#     plt.plot(sigmas, l_sharpness, label = "sharpness",  marker='o')
+#     plt.plot(sigmas, l_weight_norms, label = "norms",  marker='o')
+#     # plt.plot(l_weight_norms, l_sharpness, label = "S", marker='o', color='b')
+#     plt.grid(True, linestyle='-.')
+#     plt.legend() #loc='lower left'
+#     plt.title("Norm and Sharpness")
+#     plt.xlabel("Sigma")
+#     plt.ylabel("Measure")
+#     plt.show()            
+# ###############################
