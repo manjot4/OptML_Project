@@ -31,8 +31,9 @@ def compute_grad_variance(grad_norms, grad_avg):  #list of lists consisting of g
     ft = sum(grad_norms) / len(grad_norms)
     
     """|| E[g] ||^2"""
-    avg_grads = sum(grad_avg)/len(grad_avg)
-    st = torch.norm(torch.tensor(avg_grads))
+    # grad_avg = torch.stack(grad_avg)
+    # grad_avg = torch.mean(grad_avg,0)
+    st = torch.norm(grad_avg)
     
     variance_score = ft - st
     return variance_score

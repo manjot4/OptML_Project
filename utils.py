@@ -103,7 +103,8 @@ def train(model, device, train_loader, optimizer, epoch, batch_size):
 def train_get_grad(model, device, train_loader, optimizer, epoch, batch_size):
     model.train()
     grad_norms = []
-    grad_avg = []
+    # grad_avg = []
+    grad_avg = torch.zeros([1861632])
     running_loss = 0
     for batch_idx, (data, target) in enumerate(train_loader):
         # print (batch_idx)
@@ -117,11 +118,18 @@ def train_get_grad(model, device, train_loader, optimizer, epoch, batch_size):
         running_loss += loss.item() 
 
         gradients = get_gradients(model)
+        # print (gradients.size())
+        # print ("ok")
         norm = torch.norm(gradients)
         grad_norms.append(norm)
-        grad_avg.append(torch.mean(gradients).item())
+        # mean_grad = torch.mean(gradients,0)
+        # grad_avg.append(mean_grad)
+        # grad_avg.append(torch.mean(gradients).item())
+        # grad_avg.append(gradients)
+        grad_avg += gradients 
         del gradients
     train_loss = running_loss/len(train_loader)
+    grad_avg = grad_avg / len(train_loader)
     return train_loss, grad_norms, grad_avg
 
 #         if batch_idx % log_interval == 0:
@@ -131,7 +139,7 @@ def train_get_grad(model, device, train_loader, optimizer, epoch, batch_size):
 
 
 
-def train_kfac(model, device, train_loader, optimizer, epoch, batch_size):
+def train_kfac_get_grad(model, device, train_loader, optimizer, epoch, batch_size):
     model.train()
     grad_norms = []
     grad_avg = []
@@ -158,12 +166,41 @@ def train_kfac(model, device, train_loader, optimizer, epoch, batch_size):
         gradients = get_gradients(model)
         norm = torch.norm(gradients)
         grad_norms.append(norm)#.tolist())
-        grad_avg.append(torch.mean(gradients).item())
+        mean_grad = torch.mean(gradients,0)
+        grad_avg.append(mean_grad)
+        # grad_avg.append(torch.mean(gradients).item())
         del gradients
 
         running_loss += loss.item() 
     train_loss = running_loss/len(train_loader)
     return train_loss, grad_norms, grad_avg
+
+
+def train_kfac(model, device, train_loader, optimizer, epoch, batch_size):
+    model.train()
+    running_loss = 0
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        data = data.view(-1, 784)
+        optimizer.zero_grad()
+        output = model(data) 
+        loss = F.nll_loss(output, target)
+        # if optim_name in ['kfac', 'ekfac'] and optimizer.steps % optimizer.TCov == 0:
+        if optimizer.steps % optimizer.TCov == 0:
+            # compute true fisher
+            optimizer.acc_stats = True
+            with torch.no_grad():
+                sampled_y = torch.multinomial(torch.nn.functional.softmax(output.cpu().data, dim=1),1).squeeze().to(device)
+            loss_sample = F.nll_loss(output, sampled_y)
+            loss_sample.backward(retain_graph=True)
+            optimizer.acc_stats = False
+            optimizer.zero_grad()  # clear the gradient for computing true-fisher.
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item() 
+    train_loss = running_loss/len(train_loader)
+    return train_loss
+
 
 
 
