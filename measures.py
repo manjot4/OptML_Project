@@ -35,7 +35,7 @@ def compute_grad_variance(grad_norms, grad_avg):  #list of lists consisting of g
     # grad_avg = torch.mean(grad_avg,0)
     st = torch.norm(grad_avg)
     
-    variance_score = ft - st
+    variance_score = ft - (st*st)
     return variance_score
     
 
