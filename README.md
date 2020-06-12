@@ -9,10 +9,10 @@ In particular, this study expores PAC-Bayes theory and variance of gradients as 
 The project is structured as follows:
 
     .
-    ├── utils.py     # Implements training, testing and different dataloaders
-    ├── measures.py              # Implements different complexity measures
-    ├── model.py      # Implements architecture of the model
-    ├── avg_adam_norm_sharpness.ipynb  # main file running different optimisation algorithms
+    ├── utils.py                      # Implements training, testing and different dataloaders
+    ├── measures.py                   # Implements different complexity measures
+    ├── model.py                      # Implements architecture of the model
+    ├── avg_adam_norm_sharpness.ipynb # main file running different optimisation algorithms
     ├── .py        # Functions for preprocessing
     ├──Norm_Sharpness
                      ├──avg_adam_norm_sharpness.ipynb  # Norm Sharpness for Adam
@@ -43,5 +43,5 @@ The Pytorch dataloader function automatically downloads MNIST data if data file 
 
 ## Authors
 
-* [Manjot Singh](manjot.singh@epfl.ch)
-* [Kshiteej Jitesh Sheth](kshiteej.sheth@epfl.ch)
+* [Manjot Singh] (manjot.singh@epfl.ch)
+* [Kshiteej Jitesh Sheth] (kshiteej.sheth@epfl.ch)
