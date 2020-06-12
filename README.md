@@ -2,7 +2,7 @@
 # Mini-Porject - Studying generalisation in first-order optimisation algorithms
 
 This project compares generalisation in different first-order Optimisation algorithms such as Adam, SGD and RMSprop. 
-In particular, this study expores PAC-Bayes theory and variance of gradients as complexity measures to compare generalisation in different optimisation algorihtms.
+In particular, this study expores PAC-Bayes theory and variance of gradients as complexity measures to compare generalisation in different optimization algorihtms.
 
 ## Project Structure
 
